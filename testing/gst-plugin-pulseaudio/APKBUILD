@@ -1,0 +1,50 @@
+# Maintainer: Michael Wyraz <michael@wyraz.de>
+pkgname=gst-plugin-pulseaudio
+pkgver=1.12.3
+pkgrel=0
+pkgdesc="GStreamer Multimedia Framework Pulseaudio Plugin"
+url="https://gstreamer.freedesktop.org/"
+arch="all"
+license="LGPL"
+depends=
+depends_dev="gstreamer-dev gst-plugins-base-dev"
+makedepends="$depends_dev pulseaudio-dev"
+replaces=
+ldpath="/usr/lib/gstreamer-.0"
+source="https://gstreamer.freedesktop.org/src/gst-plugins-good/gst-plugins-good-$pkgver.tar.xz
+	"
+builddir="$srcdir"/gst-plugins-good-$pkgver
+
+build() {
+	cd "$builddir"
+	./configure \
+		--build=$CBUILD \
+		--host=$CHOST \
+		--prefix=/usr \
+		--sysconfdir=/etc \
+		--localstatedir=/var \
+		--disable-static \
+		--disable-alpha --disable-apetag --disable-audiofx --disable-audioparsers --disable-auparse \
+		--disable-autodetect --disable-avi --disable-cutter --disable-debugutils --disable-deinterlace \
+		--disable-dtmf --disable-effectv --disable-equalizer --disable-flv --disable-flx \
+		--disable-goom --disable-goom2k1 --disable-icydemux --disable-id3demux --disable-imagefreeze \
+		--disable-interleave --disable-isomp4 --disable-law --disable-level --disable-matroska \
+		--disable-multifile --disable-multipart --disable-replaygain --disable-rtp --disable-rtpmanager \
+		--disable-rtsp --disable-shapewipe --disable-smpte --disable-spectrum --disable-udp\
+		--disable-videobox --disable-videocrop --disable-videofilter --disable-videomixer --disable-wavenc \
+		--disable-wavparse --disable-y4m --disable-monoscope --disable-oss4 \
+		--disable-fatal-warnings \
+		--with-package-name="GStreamer Pulseaudio Plugin (Alpine Linux)" \
+		--with-package-origin="http://alpinelinux.org/" \
+		|| return 1
+	make
+}
+
+package() {
+	cd "$builddir"
+	export GCONF_DISABLE_MAKEFILE_SCHEMA_INSTALL=1
+	make DESTDIR="$pkgdir" install || return 1
+	rm -rf "$pkgdir/usr/share"
+}
+
+sha512sums="8ed96d2b2c8724659cf8163be5246ec30c8a92d70fc6632e207ad258cff5624d6fc03576e6e674011bb88a4825c8ce225545bc7e60cdf66a173d9e1d4bfbbaa4  gst-plugins-good-1.12.3.tar.xz"
