@@ -1,11 +1,35 @@
-#!/bin/sh
+#!/bin/bash
 # vim: set ts=4:
 set -eu
 
 . "$(dirname "$0")"/common.sh
 
-APK_TOOLS_URI='https://github.com/alpinelinux/apk-tools/releases/download/v2.7.2/apk-tools-2.7.2-x86_64-linux.tar.gz'
-APK_TOOLS_SHA256='e949d3826d08ad41622b29186f960b135711dd96aacfb80ff8238c0fd69d051f'
+if [ -z "${BUILD_ARCH:-}" ]; then
+	echo "BUILD_ARCH is not set - exiting"
+	exit 1
+fi
+
+if [ "${BUILD_ARCH}" == "x86_64" ]; then
+	APK_TOOLS_URI="https://github.com/alpinelinux/apk-tools/releases/download/v2.7.2/apk-tools-2.7.2-x86_64-linux.tar.gz"
+	APK_TOOLS_SHA256='e949d3826d08ad41622b29186f960b135711dd96aacfb80ff8238c0fd69d051f'
+elif [ "${BUILD_ARCH}" == "armhf" ]; then
+	cd /tmp
+	wget http://mirrors.kernel.org/ubuntu/pool/main/d/dpkg/dpkg_1.17.5ubuntu5.8_amd64.deb
+	dpkg -i dpkg_1.17.5ubuntu5.8_amd64.deb
+	wget http://ftp.debian.org/debian/pool/main/i/init-system-helpers/init-system-helpers_1.18~bpo70+1_all.deb
+	dpkg -i init-system-helpers_1.18~bpo70+1_all.deb
+	wget http://ftp.debian.org/debian/pool/main/b/binfmt-support/binfmt-support_2.1.8-2_amd64.deb
+	dpkg -i binfmt-support_2.1.8-2_amd64.deb
+	wget http://ftp.debian.org/debian/pool/main/q/qemu/qemu-user-static_2.12+dfsg-3_amd64.deb
+	dpkg -i qemu-user-static_2.12+dfsg-3_amd64.deb
+	APK_TOOLS_URI="https://github.com/alpinelinux/apk-tools/releases/download/v2.7.2/apk-tools-2.7.2-armhf-linux.tar.gz"
+	APK_TOOLS_SHA256='7638f8b38aa277917cd0db10640d589579b76837fb11b7acec81b8e2b39ade86'
+	EXTRA_BINARY=/usr/bin/qemu-arm-static
+else
+	echo "BUILD_ARCH must be one of x86_64 or armhf, not ${BUILD_ARCH}"
+	exit 1
+fi
+
 
 APK=$(which apk 2>/dev/null) || true
 
@@ -14,6 +38,7 @@ if [ ! -e "$APK" ]; then
 
 	cd /tmp
 	wget -T 10 "$APK_TOOLS_URI"
+	echo "$APK_TOOLS_SHA256  ${APK_TOOLS_URI##*/}"
 	echo "$APK_TOOLS_SHA256  ${APK_TOOLS_URI##*/}" | sha256sum -c
 	tar -xzf ${APK_TOOLS_URI##*/}
 	mv apk-tools-*/apk /tmp/apk
@@ -28,6 +53,11 @@ cd "$ALPINE_ROOT"
 echo "$MIRROR_URI/main" > etc/apk/repositories
 cp -R "$CLONE_DIR"/.travis/keys etc/apk/keys
 cp /etc/resolv.conf etc/resolv.conf
+
+if [ ! -z "${EXTRA_BINARY:-}" ]; then
+	mkdir -p .$( dirname ${EXTRA_BINARY} )
+	cp -a ${EXTRA_BINARY} .${EXTRA_BINARY}
+fi
 
 $APK \
 	--root . --update-cache --initdb --no-progress \

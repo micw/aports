@@ -1,0 +1,37 @@
+#!/bin/sh
+# vim: set ts=4:
+
+. "$(dirname "$0")"/common.sh
+
+if [ ! -d "$ALPINE_ROOT" ]; then
+	title 'Alpine is not installed'
+	exit 0
+fi
+
+cd "$ALPINE_ROOT"
+
+title 'Trying to unmount volumes'
+
+mountpoints="run dev sys proc"
+
+for p in $mountpoints; do
+  if mountpoint $p > /dev/null 2>&1; then
+  	mount --make-rslave $p
+  	umount -R $p
+  fi
+done
+
+for p in $mountpoints; do
+  if mountpoint $p > /dev/null 2>&1; then
+  	echo "$p is still mounted"
+  	exit 1
+  else
+  	echo "$p - OK"
+  fi
+ done
+
+title 'Delete alpine root'
+
+rm -rf "$ALPINE_ROOT"
+
+echo "done."
