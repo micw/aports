@@ -1,7 +1,11 @@
+env:
+  - BUILD_ARCH=x86_64
+  - BUILD_ARCH=armhf
 dist: trusty
+language: generic
 sudo: required
 install:
-  - sudo .travis/install-alpine
+  - sudo BUILD_ARCH=${BUILD_ARCH} .travis/install-alpine
   - sudo .travis/setup-alpine
 script: |
   source .travis/common.sh

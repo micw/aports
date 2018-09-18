@@ -4,6 +4,13 @@ set -eu
 
 . "$(dirname "$0")"/common.sh
 
+if [ ! -d "$ALPINE_ROOT" ]; then
+	echo "Nothing to do"
+	exit 0
+fi
+
+cd "$ALPINE_ROOT"
+
 title 'Setting up Alpine Linux'
 
 mkdir -p "${ALPINE_ROOT}${CLONE_DIR}"
