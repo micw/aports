@@ -17,6 +17,7 @@ elif [ "${BUILD_ARCH}" == "armhf" ]; then
 	sudo apt-get -y install qemu qemu-user-static binfmt-support
 	APK_TOOLS_URI="https://github.com/alpinelinux/apk-tools/releases/download/v2.7.2/apk-tools-2.7.2-armhf-linux.tar.gz"
 	APK_TOOLS_SHA256='7638f8b38aa277917cd0db10640d589579b76837fb11b7acec81b8e2b39ade86'
+	EXTRA_BINARY=/usr/bin/qemu-arm-static
 else
 	echo "BUILD_ARCH must be one of x86_64 or armhf, not ${BUILD_ARCH}"
 	exit 1
@@ -45,6 +46,11 @@ cd "$ALPINE_ROOT"
 echo "$MIRROR_URI/main" > etc/apk/repositories
 cp -R "$CLONE_DIR"/.travis/keys etc/apk/keys
 cp /etc/resolv.conf etc/resolv.conf
+
+if [ ! -z "${EXTRA_BINARY}" ]; then
+	mkdir -p .$( dirname ${EXTRA_BINARY} )
+	cp -a ${EXTRA_BINARY} .${EXTRA_BINARY}
+fi
 
 $APK \
 	--root . --update-cache --initdb --no-progress \
