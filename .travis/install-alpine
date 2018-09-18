@@ -4,7 +4,7 @@ set -eu
 
 . "$(dirname "$0")"/common.sh
 
-if [ "${BUILD_ARCH}x" == "x" ]; then
+if [ -z "${BUILD_ARCH:-}" ]; then
 	echo "BUILD_ARCH is not set - exiting"
 	exit 1
 fi
@@ -47,7 +47,7 @@ echo "$MIRROR_URI/main" > etc/apk/repositories
 cp -R "$CLONE_DIR"/.travis/keys etc/apk/keys
 cp /etc/resolv.conf etc/resolv.conf
 
-if [ ! -z "${EXTRA_BINARY}" ]; then
+if [ ! -z "${EXTRA_BINARY:-}" ]; then
 	mkdir -p .$( dirname ${EXTRA_BINARY} )
 	cp -a ${EXTRA_BINARY} .${EXTRA_BINARY}
 fi
