@@ -13,7 +13,7 @@ alpine_run() {
 	[ "$(id -u)" -eq 0 ] || _sudo='sudo'
 
 	$_sudo chroot "$ALPINE_ROOT" /usr/bin/env -i su -l $user \
-		sh -c "cd $CLONE_DIR; $cmd"
+		sh -c "export PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin; cd $CLONE_DIR; $cmd"
 }
 
 die() {
