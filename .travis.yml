@@ -4,7 +4,7 @@ env:
 dist: trusty
 sudo: required
 install:
-  - sudo .travis/install-alpine
+  - sudo BUILD_ARCH=${BUILD_ARCH} .travis/install-alpine
   - sudo .travis/setup-alpine
 script: |
   source .travis/common.sh
